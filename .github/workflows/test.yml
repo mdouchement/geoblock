@@ -1,0 +1,65 @@
+on:
+- push
+- pull_request
+name: Test
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    env:
+      WORKDIR: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}
+      GO_VERSION: "~1"
+      TASK_VERSION: v3.11.0
+      TASK_SUM: 8284fa89367e0bbb8ba5dcb90baa6826b7669c4a317e5b9a46711f7380075e21
+      YAEGI_VERSION: v0.11.3
+      YAEGI_SUM: 7bea6dda33f9ca672e89e394e8bc326c4a7dc1f3d5b7b572dc81fff2bfb05963
+    # defaults:
+    #   run:
+    #     working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}
+    steps:
+    #
+    # Workaround until https://github.com/actions/setup-go/pull/184 merged
+    - name: Remove Golang from cache
+      run: rm -rf ${RUNNER_TOOL_CACHE}/go
+    #
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+      id: go
+    #
+    - name: Tooling(Taskfile)
+      run: |
+        curl -LO https://github.com/go-task/task/releases/download/${{ env.TASK_VERSION }}/task_linux_amd64.tar.gz && \
+        echo "${{ env.TASK_SUM }}  task_linux_amd64.tar.gz" | sha256sum -c && \
+        tar -xf task_linux_amd64.tar.gz && \
+        cp task /usr/local/bin/
+    #
+    - name: Tooling(Yaegi)
+      run: |
+        curl -LO https://github.com/traefik/yaegi/releases/download/${{ env.YAEGI_VERSION }}/yaegi_${{ env.YAEGI_VERSION }}_linux_amd64.tar.gz && \
+        echo "${{ env.YAEGI_SUM }}  yaegi_${{ env.YAEGI_VERSION }}_linux_amd64.tar.gz" | sha256sum -c && \
+        tar -xf yaegi_${{ env.YAEGI_VERSION }}_linux_amd64.tar.gz && \
+        cp yaegi /usr/local/bin/
+    #
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        path: ${{ env.WORKDIR }}
+    #
+    - name: Setup GOPATH
+      run: go env -w GOPATH=${{ github.workspace }}/go
+    #
+    - name: Lint
+      run: go vet ./...
+      working-directory: ${{ env.WORKDIR }}
+    #
+    - name: Test
+      run: task test
+      working-directory: ${{ env.WORKDIR }}
+    #
+    - name: Run tests with Yaegi
+      run: task yaegi-test
+      working-directory: ${{ env.WORKDIR }}
+      env:
+        GOPATH: ${{ github.workspace }}/go

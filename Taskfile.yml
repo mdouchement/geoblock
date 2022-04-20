@@ -1,0 +1,53 @@
+# https://taskfile.dev
+# https://github.com/mdouchement/checksum
+
+version: '3'
+
+vars:
+  WORKDIR: { sh: pwd }
+
+env:
+  GO111MODULE: on
+  CGO_ENABLED: 0
+
+tasks:
+  test:
+    desc: Tests
+    cmds:
+      - task: ip2location
+      - go test -v ./...
+
+  yaegi-test:
+    desc: Tests with yaegi
+    cmds:
+      - task: ip2location
+      - yaegi test -unsafe -v .
+
+  ip2location:
+    desc: Download databases
+    cmds:
+      - |
+        if [ ! -f "{{.WORKDIR}}/IP2LOCATION-LITE-DB1.BIN" ]; then
+          go run {{.WORKDIR}}/.tools/ip2location-download/main.go https://download.ip2location.com/lite/IP2LOCATION-LITE-DB1.BIN.ZIP {{.WORKDIR}}/IP2LOCATION-LITE-DB1.BIN
+        fi
+      - |
+        if [ ! -f "{{.WORKDIR}}/IP2LOCATION-LITE-DB1.IPV6.BIN" ]; then
+          go run {{.WORKDIR}}/.tools/ip2location-download/main.go https://download.ip2location.com/lite/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP {{.WORKDIR}}/IP2LOCATION-LITE-DB1.IPV6.BIN
+        fi
+
+  vendor:
+    desc: Vendor dependencies
+    cmds:
+      - go mod tidy
+      - go mod vendor
+      # Prune
+      - find vendor -type f {{ .FILTER | splitList "\n" | join " " }} -delete
+    vars:
+      FILTER: |
+        ! -name 'modules.txt'
+        ! -name '*.mod'
+        ! -name '*.sum'
+        ! -name '*.go'
+        ! -name '*.s'
+        ! -name '*.c'
+        ! -name '*.h'

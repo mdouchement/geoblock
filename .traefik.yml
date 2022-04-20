@@ -1,0 +1,30 @@
+displayName: geoblock
+type: middleware
+import: github.com/mdouchement/geoblock
+summary: allow/block request based on their country of origin or CIDR
+testData:
+  enabled: true
+  databases:
+  - IP2LOCATION-LITE-DB1.IPV6.BIN
+  - IP2LOCATION-LITE-DB1.BIN
+  defaultAction: block
+  allowlist:
+  - type: country
+    value: FR
+  blocklist:
+  - type: cidr
+    value: 127.0.0.0/8 # IPv4 loopback
+  - type: cidr
+    value: 10.0.0.0/8 # RFC1918
+  - type: cidr
+    value: 172.16.0.0/12 # RFC1918
+  - type: cidr
+    value: 192.168.0.0/16 # RFC1918
+  - type: cidr
+    value: 169.254.0.0/16 # RFC3927 link-local
+  - type: cidr
+    value: ::1/128 # IPv6 loopback
+  - type: cidr
+    value: fe80::/10 # IPv6 link-local
+  - type: cidr
+    value: fc00::/7 # IPv6 unique local addr
