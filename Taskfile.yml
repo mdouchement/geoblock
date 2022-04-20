@@ -1,5 +1,4 @@
 # https://taskfile.dev
-# https://github.com/mdouchement/checksum
 
 version: '3'
 
@@ -14,26 +13,32 @@ tasks:
   test:
     desc: Tests
     cmds:
-      - task: ip2location
       - go test -v ./...
 
   yaegi-test:
     desc: Tests with yaegi
     cmds:
-      - task: ip2location
       - yaegi test -unsafe -v .
 
   ip2location:
     desc: Download databases
+    vars:
+      SCRIPT: "{{.WORKDIR}}/.tools/ip2location-download/main.go"
+      IPV4: "{{.WORKDIR}}/IP2LOCATION-LITE-DB1.BIN"
+      IPV6: "{{.WORKDIR}}/IP2LOCATION-LITE-DB1.IPV6.BIN"
     cmds:
-      - |
-        if [ ! -f "{{.WORKDIR}}/IP2LOCATION-LITE-DB1.BIN" ]; then
-          go run {{.WORKDIR}}/.tools/ip2location-download/main.go https://download.ip2location.com/lite/IP2LOCATION-LITE-DB1.BIN.ZIP {{.WORKDIR}}/IP2LOCATION-LITE-DB1.BIN
-        fi
-      - |
-        if [ ! -f "{{.WORKDIR}}/IP2LOCATION-LITE-DB1.IPV6.BIN" ]; then
-          go run {{.WORKDIR}}/.tools/ip2location-download/main.go https://download.ip2location.com/lite/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP {{.WORKDIR}}/IP2LOCATION-LITE-DB1.IPV6.BIN
-        fi
+      - go run {{.SCRIPT}} https://download.ip2location.com/lite/IP2LOCATION-LITE-DB1.BIN.ZIP {{.IPV4}}
+      - go run {{.SCRIPT}} https://download.ip2location.com/lite/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP {{.IPV6}}
+
+  ip2location-ascode:
+    desc: Update ip2location code
+    vars:
+      SCRIPT: "{{.WORKDIR}}/.tools/ip2location-ascode/main.go"
+      IPV4: "{{.WORKDIR}}/IP2LOCATION-LITE-DB1.BIN"
+      IPV6: "{{.WORKDIR}}/IP2LOCATION-LITE-DB1.IPV6.BIN"
+    cmds:
+      - task: ip2location
+      - go run {{.SCRIPT}} {{.IPV4}} {{.IPV6}}
 
   vendor:
     desc: Vendor dependencies

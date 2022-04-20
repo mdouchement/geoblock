@@ -39,6 +39,9 @@ http:
           databases:
           - /plugins-local/src/github.com/mdouchement/geoblock/IP2LOCATION-LITE-DB1.IPV6.BIN
           - /plugins-local/src/github.com/mdouchement/geoblock/IP2LOCATION-LITE-DB1.BIN
+          # Or use default assets stored inside the code
+          # - IP2LOCATION-LITE-DB1.IPV6.BIN
+          # - IP2LOCATION-LITE-DB1.BIN
           defaultAction: block
           allowlist:
           - type: country

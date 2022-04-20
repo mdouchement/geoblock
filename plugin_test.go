@@ -15,7 +15,50 @@ func (n noopHandler) ServeHTTP(rw http.ResponseWriter, _ *http.Request) {
 	rw.WriteHeader(http.StatusTeapot)
 }
 
-func TestTestPlugin_ServeHTTP(t *testing.T) {
+func TestCreateConfig(t *testing.T) {
+	c := &geoblock.Config{
+		DisallowedStatusCode: http.StatusForbidden,
+		DefaultAction:        geoblock.DefaultActionBlock,
+		Blocklist: []geoblock.Rule{
+			{
+				Type:  geoblock.RuleTypeCIDR,
+				Value: "127.0.0.0/8", // IPv4 loopback
+			},
+			{
+				Type:  geoblock.RuleTypeCIDR,
+				Value: "10.0.0.0/8", // RFC1918
+			},
+			{
+				Type:  geoblock.RuleTypeCIDR,
+				Value: "172.16.0.0/12", // RFC1918
+			},
+			{
+				Type:  geoblock.RuleTypeCIDR,
+				Value: "192.168.0.0/16", // RFC1918
+			},
+			{
+				Type:  geoblock.RuleTypeCIDR,
+				Value: "169.254.0.0/16", // RFC3927 link-local
+			},
+			{
+				Type:  geoblock.RuleTypeCIDR,
+				Value: "::1/128", // IPv6 loopback
+			},
+			{
+				Type:  geoblock.RuleTypeCIDR,
+				Value: "fe80::/10", // IPv6 link-local
+			},
+			{
+				Type:  geoblock.RuleTypeCIDR,
+				Value: "fc00::/7", // IPv6 unique local addr
+			},
+		},
+	}
+
+	assert.Equal(t, c, geoblock.CreateConfig())
+}
+
+func TestPlugin_ServeHTTP(t *testing.T) {
 	c := geoblock.CreateConfig()
 	c.Enabled = true
 	c.Databases = []string{
