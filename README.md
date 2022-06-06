@@ -36,6 +36,7 @@ http:
       plugin:
         geoblock:
           enabled: true
+          allowLetsEncrypt: true
           databases:
           - /plugins-local/src/github.com/mdouchement/geoblock/IP2LOCATION-LITE-DB1.IPV6.BIN
           - /plugins-local/src/github.com/mdouchement/geoblock/IP2LOCATION-LITE-DB1.BIN

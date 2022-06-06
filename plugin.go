@@ -79,6 +79,12 @@ func (p Plugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if p.AllowLetsEncrypt && strings.HasPrefix(r.URL.Path, "/.well-known/acme-challenge/") {
+		// Allow Let's Encrypt HTTP challenge.
+		p.next.ServeHTTP(w, r)
+		return
+	}
+
 	for _, ip := range p.CollectIPs(r) {
 		allowed, country, err := p.evaluator.Evaluate(ip)
 		if err != nil {
