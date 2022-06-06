@@ -17,6 +17,7 @@ func (n noopHandler) ServeHTTP(rw http.ResponseWriter, _ *http.Request) {
 
 func TestCreateConfig(t *testing.T) {
 	c := &geoblock.Config{
+		AllowLetsEncrypt:     true,
 		DisallowedStatusCode: http.StatusForbidden,
 		DefaultAction:        geoblock.DefaultActionBlock,
 		Blocklist: []geoblock.Rule{

@@ -18,6 +18,7 @@ type (
 	// A Config defines the plugin configuration.
 	Config struct {
 		Enabled              bool     // Enable this plugin?
+		AllowLetsEncrypt     bool     // Allow Let's Encrypt challenge path.
 		Databases            []string // Path to ip2location database files.
 		DisallowedStatusCode int      // HTTP status code to return for disallowed requests.
 		DefaultAction        string   // Default action to perform when there is no specified rule.
@@ -38,6 +39,7 @@ type (
 // CreateConfig creates the default plugin configuration.
 func CreateConfig() *Config {
 	return &Config{
+		AllowLetsEncrypt:     true,
 		DisallowedStatusCode: http.StatusForbidden,
 		DefaultAction:        DefaultActionBlock,
 		Blocklist: []Rule{
