@@ -11,8 +11,8 @@ jobs:
       GO_VERSION: "~1"
       TASK_VERSION: v3.11.0
       TASK_SUM: 8284fa89367e0bbb8ba5dcb90baa6826b7669c4a317e5b9a46711f7380075e21
-      YAEGI_VERSION: v0.11.3
-      YAEGI_SUM: 7bea6dda33f9ca672e89e394e8bc326c4a7dc1f3d5b7b572dc81fff2bfb05963
+      YAEGI_VERSION: v0.14.2
+      YAEGI_SUM: f5cde6ebf4bd964782d5090013bb300c5288e11be5478cf7b270bfda758952f3
     # defaults:
     #   run:
     #     working-directory: ${{ github.workspace }}/go/src/github.com/${{ github.repository }}

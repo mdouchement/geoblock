@@ -1,6 +1,10 @@
 package geoblock
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/mdouchement/geoblock/lookup"
+)
 
 // Rule data types.
 const (
@@ -17,11 +21,12 @@ const (
 type (
 	// A Config defines the plugin configuration.
 	Config struct {
-		Enabled              bool     // Enable this plugin?
-		AllowLetsEncrypt     bool     // Allow Let's Encrypt challenge path.
-		Databases            []string // Path to ip2location database files.
-		DisallowedStatusCode int      // HTTP status code to return for disallowed requests.
-		DefaultAction        string   // Default action to perform when there is no specified rule.
+		Enabled              bool            // Enable this plugin?
+		AllowLetsEncrypt     bool            // Allow Let's Encrypt challenge path.
+		Databases            []string        // Path to ip2location database files.
+		DatabaseReaders      []lookup.Reader // Overrides Databases paths mostly for test purposes.
+		DisallowedStatusCode int             // HTTP status code to return for disallowed requests.
+		DefaultAction        string          // Default action to perform when there is no specified rule.
 		Allowlist            []Rule
 		Blocklist            []Rule
 	}

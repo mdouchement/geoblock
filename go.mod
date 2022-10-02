@@ -1,9 +1,9 @@
 module github.com/mdouchement/geoblock
 
-go 1.17
+go 1.18
 
 require (
-	github.com/ip2location/ip2location-go/v9 v9.2.0
+	github.com/ip2location/ip2location-go/v9 v9.4.1
 	github.com/stretchr/testify v1.7.1
 )
 
