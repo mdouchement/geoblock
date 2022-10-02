@@ -1,8 +1,15 @@
 package geoblock_test
 
 import (
+	"archive/zip"
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/mdouchement/geoblock"
@@ -68,6 +75,11 @@ func TestPlugin_ServeHTTP(t *testing.T) {
 	}
 	c.Allowlist = append(c.Allowlist, geoblock.Rule{Type: geoblock.RuleTypeCountry, Value: "fr"})
 
+	err := check(c)
+	if err != nil {
+		assert.FailNow(t, err.Error())
+	}
+
 	plugin, err := geoblock.New(nil, new(noopHandler), c, "geoblock")
 	assert.NoError(t, err)
 
@@ -119,4 +131,79 @@ func TestPlugin_ServeHTTP(t *testing.T) {
 
 		assert.Equal(t, test.status, rr.Code)
 	}
+}
+
+func check(c *geoblock.Config) error {
+	for _, dbname := range c.Databases {
+		_, err := os.Stat(dbname)
+		if err == nil || os.IsExist(err) {
+			continue
+		}
+
+		err = download(
+			fmt.Sprintf("https://download.ip2location.com/lite/%s.ZIP", dbname),
+			dbname,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func download(url, filename string) error {
+	res, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("downloading db failed: %w", err)
+	}
+	defer res.Body.Close()
+
+	payload, err := io.ReadAll(res.Body)
+	if err != nil {
+		return fmt.Errorf("downloading db failed: %w", err)
+	}
+
+	var r io.Reader = bytes.NewReader(payload)
+	if strings.HasSuffix(strings.ToLower(url), ".zip") {
+		r = nil
+
+		codec, err := zip.NewReader(bytes.NewReader(payload), res.ContentLength)
+		if err != nil {
+			return fmt.Errorf("creating zip reader: %w", err)
+		}
+
+		for _, file := range codec.File {
+			if !strings.HasSuffix(strings.ToLower(file.Name), ".bin") {
+				continue
+			}
+
+			f, err := file.Open()
+			if err != nil {
+				return fmt.Errorf("opening zip db file: %w", err)
+			}
+			defer f.Close()
+
+			r = f
+		}
+	}
+
+	if r == nil {
+		return errors.New("db file not found in downloaded archive")
+	}
+
+	//
+
+	w, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("creating output file: %w", err)
+	}
+	defer w.Close()
+
+	_, err = io.Copy(w, r)
+	if err != nil {
+		return fmt.Errorf("copy db to file: %w", err)
+	}
+
+	return w.Sync()
 }

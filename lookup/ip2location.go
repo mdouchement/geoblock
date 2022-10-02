@@ -2,32 +2,35 @@ package lookup
 
 import (
 	"errors"
-	"log"
+	"io"
 	"net"
-	"os"
 	"strings"
 
 	"github.com/ip2location/ip2location-go/v9"
 )
 
+// A Reader is used to load databases.
+type Reader struct {
+	io.ReadCloser
+	io.ReaderAt
+}
+
 type i2l struct {
 	db *ip2location.DB
 }
 
-// OpenIP2location opens a ip2location database and returns a Lookup.
+// OpenIP2location opens an ip2location database and returns a Lookup.
 func OpenIP2location(dbname string) (Lookup, error) {
 	db, err := ip2location.OpenDB(dbname)
-	if os.IsNotExist(err) {
-		log.Printf("%s not found, fallback on static asset", dbname)
 
-		var payload []byte
-		payload, err = database(dbname)
-		if err != nil {
-			return nil, err
-		}
+	return &i2l{
+		db: db,
+	}, err
+}
 
-		db, err = ip2location.OpenDBWithReader(newrcat(payload))
-	}
+// OpenIP2locationReader reads an ip2location database and returns a Lookup.
+func OpenIP2locationReader(r Reader) (Lookup, error) {
+	db, err := ip2location.OpenDBWithReader(r)
 
 	return &i2l{
 		db: db,

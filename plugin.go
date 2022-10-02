@@ -60,13 +60,24 @@ func New(_ context.Context, next http.Handler, c *Config, name string) (http.Han
 		return nil, fmt.Errorf("%s: evaluator: %w", name, err)
 	}
 
-	for _, databasename := range c.Databases {
-		lookup, err := lookup.OpenIP2location(databasename)
+	for _, r := range c.DatabaseReaders {
+		lookup, err := lookup.OpenIP2locationReader(r)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %s: ip2location: %w", name, databasename, err)
+			return nil, fmt.Errorf("%s: ip2location: %w", name, err)
 		}
 
 		p.evaluator.AddLookup(lookup)
+	}
+
+	if len(c.DatabaseReaders) == 0 {
+		for _, databasename := range c.Databases {
+			lookup, err := lookup.OpenIP2location(databasename)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s: ip2location: %w", name, databasename, err)
+			}
+
+			p.evaluator.AddLookup(lookup)
+		}
 	}
 
 	return p, err
@@ -94,7 +105,7 @@ func (p Plugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if !allowed {
-			log.Printf("%s: [%s %s %s] blocked request from %s", p.name, r.Host, r.Method, r.URL.Path, strings.ToUpper(country))
+			log.Printf("%s: [%s %s %s] blocked request from %s (%s)", p.name, r.Host, r.Method, r.URL.Path, strings.ToUpper(country), ip)
 			w.WriteHeader(p.DisallowedStatusCode)
 			return
 		}
