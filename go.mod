@@ -1,6 +1,6 @@
 module github.com/mdouchement/geoblock
 
-go 1.24
+go 1.22
 
 require (
 	github.com/ip2location/ip2location-go/v9 v9.7.1
