@@ -47,6 +47,8 @@ tasks:
       - go mod vendor
       # Prune
       - find vendor -type f {{ .FILTER | splitList "\n" | join " " }} -delete
+      # Apply patch for Yaegi `unsafe' issue
+      - git apply yaegi.patch
     vars:
       FILTER: |
         ! -name 'modules.txt'
